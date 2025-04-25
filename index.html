@@ -82,18 +82,31 @@
         });
       });
 
+    
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (selected.length !== maxCantidad) {
         alert("Debés seleccionar exactamente " + maxCantidad + " número(s).");
         return;
       }
+
       const formData = new FormData(form);
       formData.append("numeros", JSON.stringify(selected));
+      const nombre = form.elements["nombre"].value;
+      const telefono = form.elements["telefono"].value;
+
       const response = await fetch(API_URL, {
         method: "POST",
         body: formData
       });
+
+      const mensaje = `Hola, soy ${nombre} y mis números son: ${selected.join(", ")}.
+Acabo de participar del sorteo de la KTM Duke 390.
+Adjunto el comprobante de pago.`;
+      const url = `https://wa.me/5493489541676?text=${encodeURIComponent(mensaje)}`;
+      window.location.href = url;
+    });
+
       alert("Datos enviados. Confirmación por WhatsApp");
       form.reset();
       selected = [];
