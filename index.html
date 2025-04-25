@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sorteo KTM Duke 390</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #fff; color: #000; margin: 0; padding: 0; }
+    .container { max-width: 800px; margin: auto; padding: 20px; }
+    img { width: 100%; border-radius: 10px; }
+    h1, h2 { text-align: center; }
+    .botones { text-align: center; margin: 20px 0; }
+    .botones a {
+      display: inline-block; margin: 10px; padding: 10px 20px;
+      background: #000; color: #fff; text-decoration: none; border-radius: 8px;
+    }
+    form { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+    input, select, button { padding: 10px; font-size: 16px; }
+    button { background: #000; color: #fff; border: none; cursor: pointer; }
+    .grid-container {
+      display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; margin-top: 20px;
+    }
+    .number-box {
+      padding: 6px; font-size: 12px; text-align: center;
+      border: 1px solid #ccc; border-radius: 4px; cursor: pointer;
+    }
+    .unavailable { background-color: #ccc; cursor: not-allowed; }
+    .selected { background-color: #4caf50; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="ktm_duke_real.jpg" alt="KTM Duke 390" />
+    <h1>SORTEO MOTO KTM DUKE 390 (2017)</h1>
+    <div class="botones">
+      <a href="https://mpago.la/24hZPeY" onclick="setCantidad(1)" target="_blank">Pagar $20.000 (1 número)</a>
+      <a href="https://mpago.la/2ubjuWs" onclick="setCantidad(3)" target="_blank">Pagar $50.000 (3 números)</a>
+    </div>
+    <form id="formulario">
+      <input type="text" name="nombre" placeholder="Nombre completo" required>
+      <input type="tel" name="telefono" placeholder="Teléfono" required>
+      <div class="grid-container" id="number-grid"></div>
+      <button type="submit">Reservar número(s)</button>
+    </form>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycby1wb7G4BVjSaz-2uRaV07zz12AcHc5lDgkRmbUKiEJ6cT4K3tt8-7pJNBlxHa-T489/exec";
+    const gridContainer = document.getElementById("number-grid");
+    const form = document.getElementById("formulario");
+    let selected = [];
+    let maxCantidad = 1;
+
+    function setCantidad(cant) {
+      maxCantidad = cant;
+      alert("Seleccionar hasta " + cant + " número(s)");
+    }
+
+    fetch(API_URL + "?getDisponibles=true")
+      .then(res => res.json())
+      .then(data => {
+        data.numeros.forEach(num => {
+          const box = document.createElement("div");
+          box.className = "number-box";
+          box.textContent = num.numero;
+          if (num.estado === "Reservado") {
+            box.classList.add("unavailable");
+          } else {
+            box.addEventListener("click", () => {
+              if (box.classList.contains("selected")) {
+                box.classList.remove("selected");
+                selected = selected.filter(n => n !== num.numero);
+              } else if (selected.length < maxCantidad) {
+                box.classList.add("selected");
+                selected.push(num.numero);
+              } else {
+                alert("Máximo permitido: " + maxCantidad);
+              }
+            });
+          }
+          gridContainer.appendChild(box);
+        });
+      });
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (selected.length !== maxCantidad) {
+        alert("Debés seleccionar exactamente " + maxCantidad + " número(s).");
+        return;
+      }
+      const formData = new FormData(form);
+      formData.append("numeros", JSON.stringify(selected));
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: formData
+      });
+      alert("Datos enviados. Confirmación por WhatsApp");
+      form.reset();
+      selected = [];
+      document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
+    });
+  </script>
+</body>
+</html>
